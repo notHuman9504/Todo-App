@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../Css/Todo.css">
+</head>
+<body>
+    <div class="container">
+        <div class="body">
+            <h1>
+                Enter Your To-do's
+            </h1>
+            <div>
+                <input type="text" class="input" id="inpMain" placeholder="Add To-do">
+                <button id="Addbutton" onclick="addTodo()" >Add todo</button>
+            </div>
+        </div>
+        <div class="body">
+            <div id="lst">
+                
+            </div>
+        </div>
+    </div>
+</body>
+    <script defer>
+        
+    function addTodo(){
+        fetch("http://localhost:3000/todos",
+        {
+            method:"POST",
+            body:JSON.stringify(
+                {
+                    task:document.getElementById('inpMain').value
+                }
+            ),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        }).then((result)=>{
+            result.json().then((data)=>{
+                updateList()
+                console.log(data)
+            })
+        })
+        
+    }
+    function updateList()
+    {
+        let v=document.getElementById('lst')
+        fetch("http://localhost:3000/todos",
+        {
+            method:"GET"
+        }).then((result)=>{result.json().then((data)=>{
+            var todos=data
+            let s=""
+            for(let i=0;i<todos.length;i++)
+            {
+                s+=`<input type="text" class="input" id="ipt${todos[i].id}" value="${todos[i].task}">`
+                s+=`<div ><button class="deletebtn" onclick="delTodo(${todos[i].id})">Delete</button>`
+                s+=`<button class="updatebtn" onclick="updateTodo(${todos[i].id},this)">Update</button></div>`
+            }
+            
+            v.innerHTML=s
+        })})
+    }
+    function delTodo(id){
+        fetch(`http://localhost:3000/todos/${id}`,
+        {
+            method:"DELETE"
+        }).then((result)=>{result.json().then((data)=>
+            {
+                updateList();
+                console.log(data)
+            })})
+    }
+    function updateTodo(id,x)
+    {
+        console.log(id)
+        let s=document.getElementById(`ipt${id}`).value;
+        console.log(s);
+        fetch(`http://localhost:3000/todos/${id}`,
+        {
+            method:"PUT",
+            body:JSON.stringify(
+                {
+                    task:s
+                }
+            ),
+            headers:{
+                "Content-Type":"application/json"
+            }
+        }).then((result)=>{result.json().then((data)=>{
+            updateList();
+            console.log(data);
+        })})
+    }
+    updateList()
+        
+</script>
+</html>
